@@ -1,19 +1,408 @@
 <!doctype html>
-<html style="width:100%;height:100%;">
+<html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="description" content="">
-	<title>D3 Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive Pokemon Data Visualization Dashboard">
+  <title>Pokemon Data Explorer | Interactive Visualizations</title>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: #f8f9fa;
+      color: #212529;
+      line-height: 1.6;
+    }
+    
+    /* Header Styles */
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+    
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    /* Controls Styles */
+    .controls-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      align-items: start;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .control-group label {
+      font-weight: 600;
+      color: #495057;
+      font-size: 0.95rem;
+    }
+    
+    select {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      background-color: white;
+      font-size: 0.95rem;
+      color: #212529;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    select:hover {
+      border-color: #667eea;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Generation Checkbox Styles */
+    .gen-checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .gen-checkbox-group > label {
+      font-weight: 600;
+      color: #495057;
+      font-size: 0.95rem;
+    }
+    
+    .checkbox-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #667eea;
+    }
+    
+    .checkbox-item label {
+      font-size: 0.9rem;
+      color: #495057;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    /* Type Filter Styles */
+    .type-filter-group {
+      flex: 1;
+      min-width: 300px;
+    }
+    
+    .type-filter-group > label {
+      font-weight: 600;
+      color: #495057;
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+    
+    .type-legend-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.1rem;
+    }
+    
+    .type-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      padding: 0.05rem 0.2rem;
+      border-radius: 3px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .type-legend-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .type-legend-box {
+      width: 12px;
+      height: 12px;
+      border: 1px solid black;
+      border-radius: 2px;
+      transition: border-width 0.2s ease;
+      flex-shrink: 0;
+    }
+    
+    .type-legend-box.selected {
+      border-width: 2px;
+    }
+    
+    .type-legend-text {
+      font-size: 0.8rem;
+      color: #495057;
+      line-height: 1.2;
+    }
+    
+    .legend-separator {
+      grid-column: 1 / -1;
+      height: 1px;
+      background-color: #dee2e6;
+      margin: 0.15rem 0;
+    }
+    
+    .legendary-item {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      padding: 0.05rem 0.2rem;
+      border-radius: 3px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .legendary-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    /* Visualization Container */
+    .viz-container {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      min-height: 600px;
+    }
+    
+    /* SVG Styles */
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Tooltip Styles */
+    .tooltip {
+      position: absolute;
+      padding: 12px;
+      font-size: 0.875rem;
+      background: white;
+      color: #212529;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      max-width: 200px;
+    }
+    
+    .tooltip img {
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .tooltip strong {
+      color: #212529;
+      font-weight: 600;
+    }
+    
+    /* Plot Styles */
+    .x-axis text, .y-axis text {
+      font-size: 12px;
+      fill: #6c757d;
+    }
+    
+    .x-axis-label, .y-axis-label, .bar-chart-x-label, .bar-chart-y-label {
+      fill: #495057;
+      font-weight: 500;
+    }
+    
+    .bar-label {
+      font-size: 11px;
+      fill: #495057;
+    }
+    
+    /* Sankey Styles */
+    .sankey-links path {
+      transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+    }
+    
+    .sankey-nodes rect {
+      transition: stroke 0.2s ease, stroke-width 0.2s ease;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .header p {
+        font-size: 1rem;
+      }
+      
+      .controls {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .checkbox-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .type-legend-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .container {
+        padding: 1rem;
+      }
+      
+      .controls-section, .viz-container {
+        padding: 1rem;
+      }
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: #6c757d;
+      font-size: 0.875rem;
+    }
+  </style>
 </head>
-<body style="width:100%;height:100%;margin: 0;">
-	<svg width="100%" height="100%">
 
-	</svg>
+<body>
+  <!-- Header Section -->
+  <header class="header">
+    <div class="header-content">
+      <h1>Pokemon Data Explorer</h1>
+      <p>This dashboard intends to explore Pokemon diversity and characteristics in terms of statistical attributes relationships, type distributions, and generational evolution patterns.</p>
+    </div>
+  </header>
 
-	<script src="https://d3js.org/d3.v5.min.js"></script>
-	<script src="main.js"></script>
-	<script>
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Controls Section -->
+    <section class="controls-section">
+      <div class="controls">
+        <div class="gen-checkbox-group">
+          <label>Filter by Generation:</label>
+          <div class="checkbox-container">
+            <div class="checkbox-item">
+              <input type="checkbox" id="gen-1" class="generation-checkbox" value="1" checked>
+              <label for="gen-1">Gen 1</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="gen-2" class="generation-checkbox" value="2" checked>
+              <label for="gen-2">Gen 2</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="gen-3" class="generation-checkbox" value="3" checked>
+              <label for="gen-3">Gen 3</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="gen-4" class="generation-checkbox" value="4" checked>
+              <label for="gen-4">Gen 4</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="gen-5" class="generation-checkbox" value="5" checked>
+              <label for="gen-5">Gen 5</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="gen-6" class="generation-checkbox" value="6" checked>
+              <label for="gen-6">Gen 6</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <label for="x-axis-select">X-Axis Attribute:</label>
+          <select id="x-axis-select"></select>
+        </div>
+        
+        <div class="control-group">
+          <label for="y-axis-select">Y-Axis Attribute:</label>
+          <select id="y-axis-select"></select>
+        </div>
+        
+        <div class="type-filter-group">
+          <label>Filter by Type (click to toggle):</label>
+          <div id="type-legend" class="type-legend-container">
+            <!-- Type legend items will be inserted here dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
 
-	</script>
+    <!-- Visualization Section -->
+    <section class="viz-container">
+      <svg></svg>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Pokemon Data Visualization Dashboard | Built with D3.js | Designed by Ian Dunk</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
