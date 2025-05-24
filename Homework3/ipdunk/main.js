@@ -470,8 +470,8 @@ d3.csv("pokemon_alopez247.csv").then(rawData => {
 function updateScatterScalesAndAxes() {
     const validX = originalData.filter(d => !isNaN(d[selectedXAttribute]));
     const validY = originalData.filter(d => !isNaN(d[selectedYAttribute]));
-    x1.domain([0, (d3.max(validX, d => d[selectedXAttribute]) || 10) + 5]);
-    y1.domain([0, (d3.max(validY, d => d[selectedYAttribute]) || 10) + 5]);
+    x1.domain([0, (d3.max(validX, d => d[selectedXAttribute]) || 10) * 1.03]);
+    y1.domain([0, (d3.max(validY, d => d[selectedYAttribute]) || 10) * 1.03]);
     
     // Check if we're currently zoomed in
     if (currentZoom.k !== 1 || currentZoom.x !== 0 || currentZoom.y !== 0) {

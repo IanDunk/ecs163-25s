@@ -68,10 +68,6 @@ let selectedTypes = new Set();
 // Global data variable
 let originalData = null;
 
-// Zoom variables
-let zoom;
-let zoomContainer;
-
 // Initialize select elements
 const xAxisSelect = d3.select("#x-axis-select");
 const yAxisSelect = d3.select("#y-axis-select");
@@ -150,11 +146,6 @@ function resizeVisualizations() {
     x2_bar.range([0, barChartContentWidth]);
     y2_bar.range([barChartContentHeight, 0]);
     
-    // Reset zoom when resizing
-    if (zoom && zoomContainer) {
-        zoomContainer.call(zoom.transform, d3.zoomIdentity);
-    }
-    
     // Redraw all visualizations
     filterAndDrawAll();
 }
@@ -214,42 +205,6 @@ d3.csv("pokemon_alopez247.csv").then(rawData => {
     const yAxisLabel = g1.append("text").attr("class", "y-axis-label")
         .attr("transform", "rotate(-90)")
         .attr("text-anchor", "middle").style("font-size", "14px");
-
-    // Create zoom container for scatter plot points
-    zoomContainer = g1.append("g").attr("class", "zoom-container");
-
-    // --- ZOOM SETUP ---
-    zoom = d3.zoom()
-        .scaleExtent([0.5, 10])
-        .on("zoom", function() {
-            const transform = d3.event.transform;
-            
-            // Create new scales based on transform
-            const zx = transform.rescaleX(x1);
-            const zy = transform.rescaleY(y1);
-            
-            // Update axes with new scales
-            xAxisG.call(d3.axisBottom(zx));
-            yAxisG.call(d3.axisLeft(zy));
-            
-            // Transform the points container and adjust circle size
-            zoomContainer.attr("transform", transform);
-            zoomContainer.selectAll("circle")
-                .attr("r", 5 / Math.sqrt(transform.k)); // Adjust circle size based on zoom level
-        });
-
-    // Apply zoom to the scatter plot group
-    g1.call(zoom);
-
-    // Function to reset zoom
-    function resetZoom() {
-        g1.transition()
-            .duration(750)
-            .call(zoom.transform, d3.zoomIdentity);
-    }
-
-    // Add double-click to reset zoom
-    g1.on("dblclick.zoom", resetZoom);
 
     // --- BAR CHART SETUP ---
     const allTypes = Array.from(new Set(originalData.map(d => d.Type_1).filter(t => t))).sort(d3.ascending);
@@ -382,8 +337,7 @@ function updateScatterPlot(data) {
         (selectedTypes.size === 0 || selectedTypes.has(d.Type_1))
     );
     
-    // Use zoomContainer instead of g1 for circles
-    const circles = zoomContainer.selectAll("circle").data(displayData, d => d.Number);
+    const circles = g1.selectAll("circle").data(displayData, d => d.Number);
 
     circles.exit().transition().duration(500).attr("r", 0).remove();
     
